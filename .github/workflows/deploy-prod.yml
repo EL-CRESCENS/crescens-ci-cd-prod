@@ -1,16 +1,14 @@
-name: Build and Push Docker Image PROD
+name: PROD Build and Push Docker Image
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - master  # or any branch you want to trigger this workflow
+  types: [trigger-master-workflow]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+      runs-on: ubuntu-latest
 
-    steps:
+      steps:
       - name: Checkout main repository
         uses: actions/checkout@v3
         with:
@@ -66,7 +64,7 @@ jobs:
         env:
           AWS_ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ github.ref_name }}-${{ github.sha }}
         run: ./gradlew jib -Djib.to.image=${AWS_ECR_REPOSITORY}:${IMAGE_TAG}
 
       - name: Log out from Amazon ECR
