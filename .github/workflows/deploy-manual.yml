@@ -17,12 +17,12 @@ jobs:
         path: main-repo
         ref: ${{ github.ref }} # Use the reference of the event that triggered the workflow
 
-    - name: Checkout env repository
-      uses: actions/checkout@v3
-      with:
-        repository: EL-CRESCENS/crescens-env # the repo of .env
-        token: ${{ secrets.GH_PAT }}
-        path: env-repo
+    # - name: Checkout env repository
+    #   uses: actions/checkout@v3
+    #   with:
+    #     repository: EL-CRESCENS/crescens-env # the repo of .env
+    #     token: ${{ secrets.GH_PAT }}
+    #     path: env-repo
 
     - name: Set up JDK 17
       uses: actions/setup-java@v3
@@ -43,16 +43,16 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    - name: Copy env file
-      run: |
-        cp env-repo/.env-prod main-repo/.env
-        # if [ "${{ github.ref }}" = "refs/heads/master" ]; then
-        #   cp env-repo/.env-prod main-repo/.env
-        # elif [ "${{ github.ref }}" = "refs/heads/master-dev" ]; then
-        #   cp env-repo/.env-dev main-repo/.env
-        # else
-        #   echo "No matching branch, skipping env file copy"
-        # fi
+    # - name: Copy env file
+    #   run: |
+    #     cp env-repo/.env-prod main-repo/.env
+    #     # if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+    #     #   cp env-repo/.env-prod main-repo/.env
+    #     # elif [ "${{ github.ref }}" = "refs/heads/master-dev" ]; then
+    #     #   cp env-repo/.env-dev main-repo/.env
+    #     # else
+    #     #   echo "No matching branch, skipping env file copy"
+    #     # fi
 
     - name: List files in main-repo
       run: ls -la main-repo
