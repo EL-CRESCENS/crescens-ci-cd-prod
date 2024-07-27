@@ -1,8 +1,13 @@
 name: DEV Build and Push Docker Image
 
 on:
+  # For manual trigger in github actions
   workflow_dispatch:
-  types: [trigger-master-dev-workflow]
+  
+  # Allows external webhook trigger
+  repository_dispatch:
+    types:
+      - trigger-master-dev-workflow
 
 jobs:
   build:

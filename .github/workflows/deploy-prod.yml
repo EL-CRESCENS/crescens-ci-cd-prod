@@ -1,8 +1,13 @@
 name: PROD Build and Push Docker Image
 
 on:
+  # For manual trigger in github actions
   workflow_dispatch:
-  types: [trigger-master-workflow]
+
+  # Allows external webhook trigger
+  repository_dispatch:
+    types:
+      - trigger-master-workflow
 
 jobs:
   build:
