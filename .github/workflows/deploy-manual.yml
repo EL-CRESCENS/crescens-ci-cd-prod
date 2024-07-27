@@ -53,6 +53,9 @@ jobs:
         # else
         #   echo "No matching branch, skipping env file copy"
         # fi
+
+    - name: List files in main-repo
+      run: ls -la main-repo
           
     - name: Configure AWS CLI
       run: |
