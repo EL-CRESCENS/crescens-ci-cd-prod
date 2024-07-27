@@ -17,6 +17,7 @@ jobs:
           repository: EL-CRESCENS/crescens-kotlin-api # the repo that has the master-dev branch
           token: ${{ secrets.GH_PAT }}
           path: main-repo
+          ref: master-dev
 
       - name: Checkout env repository
         uses: actions/checkout@v3
@@ -47,6 +48,12 @@ jobs:
       - name: Copy env file
         run: |
           cp env-repo/.env-dev main-repo/.env
+          
+      - name: Configure AWS CLI
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set default.region ${{ secrets.AWS_REGION }}
 
       - name: Log in to Amazon ECR
         env:
