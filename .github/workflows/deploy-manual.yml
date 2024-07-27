@@ -45,13 +45,14 @@ jobs:
 
     - name: Copy env file
       run: |
-        if [ "${{ github.ref }}" = "refs/heads/master" ]; then
-          cp env-repo/.env-prod main-repo/.env
-        elif [ "${{ github.ref }}" = "refs/heads/master-dev" ]; then
-          cp env-repo/.env-dev main-repo/.env
-        else
-          echo "No matching branch, skipping env file copy"
-        fi
+        cp env-repo/.env-prod main-repo/.env
+        # if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+        #   cp env-repo/.env-prod main-repo/.env
+        # elif [ "${{ github.ref }}" = "refs/heads/master-dev" ]; then
+        #   cp env-repo/.env-dev main-repo/.env
+        # else
+        #   echo "No matching branch, skipping env file copy"
+        # fi
           
     - name: Configure AWS CLI
       run: |
