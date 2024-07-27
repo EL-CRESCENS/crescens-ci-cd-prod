@@ -1,0 +1,83 @@
+name: Build and Push Docker Image
+
+on:
+  # For manual trigger in GitHub Actions
+  workflow_dispatch:
+  
+  # Allows external webhook trigger
+  repository_dispatch:
+    types:
+      - trigger-master-workflow
+      - trigger-master-dev-workflow
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout main repository
+      uses: actions/checkout@v3
+      with:
+        repository: EL-CRESCENS/crescens-kotlin-api # the repo that has the branch
+        token: ${{ secrets.GH_PAT }}
+        path: main-repo
+        ref: ${{ github.ref }} # Use the reference of the event that triggered the workflow
+
+    - name: Checkout env repository
+      uses: actions/checkout@v3
+      with:
+        repository: EL-CRESCENS/crescens-env # the repo of .env
+        token: ${{ secrets.GH_PAT }}
+        path: env-repo
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'main-repo/**/.gradle*') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Copy env file
+      run: |
+        if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+          cp env-repo/.env-prod main-repo/.env
+        elif [ "${{ github.ref }}" = "refs/heads/master-dev" ]; then
+          cp env-repo/.env-dev main-repo/.env
+        else
+          echo "No matching branch, skipping env file copy"
+        fi
+          
+    - name: Configure AWS CLI
+      run: |
+        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws configure set default.region ${{ secrets.AWS_REGION }}
+
+    - name: Log in to Amazon ECR
+      env:
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+      run: |
+        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REPOSITORY }}
+
+    - name: Build and push Docker image
+      working-directory: main-repo
+      env:
+        AWS_ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        IMAGE_TAG: ${{ github.ref_name }}-${{ github.sha }}
+      run: ./gradlew jib -Djib.to.image=${AWS_ECR_REPOSITORY}:${IMAGE_TAG}
+
+    - name: Log out from Amazon ECR
+      run: docker logout ${{ secrets.AWS_ECR_REPOSITORY }}
