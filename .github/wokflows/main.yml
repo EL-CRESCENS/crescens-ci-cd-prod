@@ -1,0 +1,65 @@
+name: Build and Push Docker Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master  # or any branch you want to trigger this workflow
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v3
+        with:
+          repository: EL-CRESCENS/crescens-kotlin-api # the repo that has the master branch
+          token: ${{ secrets.GH_PAT }}
+          path: main-repo
+
+      - name: Checkout env repository
+        uses: actions/checkout@v3
+        with:
+          repository: EL-CRESCENS/crescens-env # the repo of .env
+          token: ${{ secrets.GH_PAT }}
+          path: env-repo
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'main-repo/**/.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Copy env file
+        run: |
+          cp env-repo/.env-prod main-repo/.env
+
+      - name: Log in to Amazon ECR
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REPOSITORY }}
+
+      - name: Build and push Docker image
+        working-directory: main-repo
+        env:
+          AWS_ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: ./gradlew jib --image=${AWS_ECR_REPOSITORY}
+
+      - name: Log out from Amazon ECR
+        run: docker logout ${{ secrets.AWS_ECR_REPOSITORY }}
