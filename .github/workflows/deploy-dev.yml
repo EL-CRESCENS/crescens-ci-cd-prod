@@ -61,11 +61,11 @@ jobs:
         run: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REPOSITORY }}
 
-      - name: Make gradlew executable
-        run: chmod +x main-repo/gradlew
+      # - name: Make gradlew executable
+      #   run: chmod +x main-repo/gradlew
       
-      - name: Check gradlew permissions
-        run: ls -l main-repo/gradlew
+      # - name: Check gradlew permissions
+      #   run: ls -l main-repo/gradlew
 
       - name: Build and push Docker image
         working-directory: main-repo
