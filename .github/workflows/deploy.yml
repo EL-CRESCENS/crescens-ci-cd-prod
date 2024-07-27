@@ -47,13 +47,14 @@ jobs:
 
     - name: Copy env file
       run: |
-          if [ "${{ github.event.client_payload.branch }}" = "master" ]; then
-            cp env-repo/.env-prod main-repo/.env
-          elif [ "${{ github.event.client_payload.branch }}" = "master-dev" ]; then
-            cp env-repo/.env-dev main-repo/.env
-          else
-            echo "No matching branch, skipping env file copy"
-          fi
+          cp env-repo/.env-prod main-repo/.env
+          # if [ "${{ github.event.client_payload.branch }}" = "master" ]; then
+          #   cp env-repo/.env-prod main-repo/.env
+          # elif [ "${{ github.event.client_payload.branch }}" = "master-dev" ]; then
+          #   cp env-repo/.env-dev main-repo/.env
+          # else
+          #   echo "No matching branch, skipping env file copy"
+          # fi
           
     - name: Configure AWS CLI
       run: |
