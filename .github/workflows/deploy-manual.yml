@@ -15,7 +15,7 @@ jobs:
         repository: EL-CRESCENS/crescens-kotlin-api # the repo that has the branch
         token: ${{ secrets.GH_PAT }}
         path: main-repo
-        ref: ${{ github.ref }} # Use the reference of the event that triggered the workflow
+        # ref: ${{ github.ref }} # Use the reference of the event that triggered the workflow
 
     # - name: Checkout env repository
     #   uses: actions/checkout@v3
